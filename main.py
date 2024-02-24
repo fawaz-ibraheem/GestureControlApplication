@@ -42,7 +42,8 @@ import csv
 # =============================================================================
 
 
-IMAGE_SIZE = 250
+IMAGE_SIZE_x = 1050
+IMAGE_SIZE_y = 1450
 
 
 def training_images(directory, hfe):
@@ -68,12 +69,13 @@ def training_images(directory, hfe):
             category = '15'
         if (category == "SetThermostatToSpecifiedTemperature"):
             category = '16'
-        for i in range(44,56, 2):
+        for i in range(44,56, 1):
             rand = random.randint(0, 100000)
             frameextractor.frameExtractor(image_path, frames_path, i/100, rand)
             img = cv2.imread(frames_path + "/%#05d.png" % (rand+1))
             img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
             img = cv2.rotate(img, cv2.ROTATE_180)
+            img = cv2.resize(img, (IMAGE_SIZE_x, IMAGE_SIZE_y))
             x_training = hfe.extract_feature(img)
             images.append(x_training)
             labels.append(category)
@@ -108,7 +110,7 @@ def test_images(directory, hfe):
         frameextractor.frameExtractor(image_path, frames_path, 1/2, rand)
         img = cv2.imread(frames_path + "/%#05d.png" % (rand+1))
         img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-        img = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE))
+        img = cv2.resize(img, (IMAGE_SIZE_x, IMAGE_SIZE_y))
         x_training = hfe.extract_feature(img)
         images.append(x_training)
         labels.append(category)
@@ -139,7 +141,7 @@ with open('Results.csv', 'w', newline='') as file:
     writer = csv.writer(file)
     for i in range(len(test_images)):
         predicted_label = cosine_similarity_classification(test_images[i], training_images, training_labels)
-        row = predicted_label + ',' + test_labels[i]
+        row = test_labels[i] + ',' + predicted_label
         writer.writerow([row])
 
 file.close()
